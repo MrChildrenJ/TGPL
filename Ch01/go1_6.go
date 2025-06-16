@@ -31,7 +31,7 @@ const (
 	greenIndex = 1 // next color in palette
 )
 
-func main() {
+func main6() {
 	//!-main
 	// The sequence of images is deterministic unless we seed
 	// the pseudo-random number generator using the current time.

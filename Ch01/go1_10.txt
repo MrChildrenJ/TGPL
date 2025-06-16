@@ -1,0 +1,170 @@
+package main
+
+import (
+	"crypto/md5"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+)
+
+type RequestResult struct {
+	URL      string
+	Round    int
+	Duration float64
+	Size     int64
+	Content  string
+	Hash     string
+	Error    error
+}
+
+func main10() {
+	start := time.Now()
+	
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: go run main.go <URL1> <URL2> ...")
+		fmt.Println("Example: go run main.go https://httpbin.org/json https://jsonplaceholder.typicode.com/posts/1")
+		return
+	}
+	
+	ch := make(chan RequestResult)
+	totalRequests := len(os.Args[1:]) * 2
+	
+	for _, url := range os.Args[1:] {
+		go fetchTwice(url, ch)
+	}
+	
+	results := make(map[string][]RequestResult)
+	for i := 0; i < totalRequests; i++ {
+		result := <-ch
+		results[result.URL] = append(results[result.URL], result)
+	}
+	
+	analyzeResults(results)
+	
+	fmt.Printf("\nTotal elapsed: %.2fs\n", time.Since(start).Seconds())
+}
+
+func fetchTwice(url string, ch chan<- RequestResult) {
+	go fetch(url, 1, ch)
+	
+	time.Sleep(100 * time.Millisecond)
+
+	go fetch(url, 2, ch)
+}
+
+func fetch(url string, round int, ch chan<- RequestResult) {
+	start := time.Now()
+	
+	result := RequestResult{
+		URL:   url,
+		Round: round,
+	}
+	
+	resp, err := http.Get(url)
+	if err != nil {
+		result.Error = err
+		result.Duration = time.Since(start).Seconds()
+		ch <- result
+		return
+	}
+	defer resp.Body.Close()
+	
+	content, err := io.ReadAll(resp.Body)
+	if err != nil {
+		result.Error = fmt.Errorf("error reading response: %v", err)
+		result.Duration = time.Since(start).Seconds()
+		ch <- result
+		return
+	}
+	
+	result.Duration = time.Since(start).Seconds()
+	result.Size = int64(len(content))
+	result.Content = string(content)
+	result.Hash = fmt.Sprintf("%x", md5.Sum(content))
+	
+	ch <- result
+}
+
+func analyzeResults(results map[string][]RequestResult) {	// results: map with key as string, value as slice of RequestResult
+	fmt.Println("\n=== Cache Strategy Analysis ===\n")
+	
+	for url, urlResults := range results {
+		fmt.Printf("URL: %s\n", url)
+		fmt.Println(strings.Repeat("-", 80))
+		
+		if len(urlResults) < 2 {
+			fmt.Println("❌ Incomplete data, cannot compare")
+			continue
+		}
+		
+		first, second := urlResults[0], urlResults[1]
+		if first.Round > second.Round {
+			first, second = second, first
+		}
+		
+		if first.Error != nil || second.Error != nil {
+			fmt.Printf("❌ Request errors:\n")
+			if first.Error != nil {
+				fmt.Printf("   1st request: %v\n", first.Error)
+			}
+			if second.Error != nil {
+				fmt.Printf("   2nd request: %v\n", second.Error)
+			}
+			fmt.Println()
+			continue
+		}
+		
+		fmt.Printf("⏱️  Timing comparison:\n")
+		fmt.Printf("   1st request: %.3fs\n", first.Duration)
+		fmt.Printf("   2nd request: %.3fs\n", second.Duration)
+		
+		timeDiff := second.Duration - first.Duration
+		speedupPercent := (first.Duration - second.Duration) / first.Duration * 100
+		
+		if timeDiff < -0.1 {
+			fmt.Printf("   🚀 2nd request faster by %.3fs (%.1f%% improvement)\n", -timeDiff, speedupPercent)
+		} else if timeDiff > 0.1 {
+			fmt.Printf("   🐌 2nd request slower by %.3fs\n", timeDiff)
+		} else {
+			fmt.Printf("   ⚖️  Similar response times\n")
+		}
+		
+		fmt.Printf("\n📊 Response size comparison:\n")
+		fmt.Printf("   1st request: %d bytes\n", first.Size)
+		fmt.Printf("   2nd request: %d bytes\n", second.Size)
+		
+		fmt.Printf("\n🔍 Content consistency:\n")
+		if first.Hash == second.Hash {
+			fmt.Printf("   ✅ Content identical (MD5: %s)\n", first.Hash)
+		} else {
+			fmt.Printf("   ❌ Content differs\n")
+			fmt.Printf("   1st MD5: %s\n", first.Hash)
+			fmt.Printf("   2nd MD5: %s\n", second.Hash)
+		}
+		
+		fmt.Printf("\n💡 Cache strategy inference:\n")
+		if first.Hash == second.Hash && speedupPercent > 10 {
+			fmt.Printf("   🎯 Likely cached (consistent content, 2nd request significantly faster)\n")
+		} else if first.Hash == second.Hash && speedupPercent > -10 && speedupPercent < 10 {
+			fmt.Printf("   🤔 Possible caching with minimal effect, or stable content\n")
+		} else if first.Hash != second.Hash {
+			fmt.Printf("   📱 Dynamic content or anti-cache mechanism\n")
+		} else {
+			fmt.Printf("   ❓ Cache strategy unclear\n")
+		}
+		
+		fmt.Printf("\n📄 Response preview:\n")
+		preview := first.Content
+		if len(preview) > 200 {
+			preview = preview[:200] + "..."
+		}
+		preview = strings.ReplaceAll(preview, "\n", "\\n")
+		fmt.Printf("   %s\n", preview)
+		
+		fmt.Println(strings.Repeat("=", 80))
+		fmt.Println()
+	}
+}

@@ -7,7 +7,7 @@ import (
 )
 
 
-func main() {
+func main3() {
 	fmt.Println(strings.Join(os.Args[1:], " "))
 	my_print(os.Args[1:])
 }

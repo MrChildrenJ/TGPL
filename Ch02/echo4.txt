@@ -1,0 +1,24 @@
+// Echo4 prints its command-line arguments.
+package main
+
+import (
+	"flag"
+	"fmt"
+	"strings"
+)
+
+// flag.String(), flag.Int(), flag.Bool(), flag.Float64(), flag.Duration()
+// flag name, default value, usage message
+var n = flag.Bool("n", false, "omit trailing newline")	// return a pointer to a bool
+var sep = flag.String("s", " ", "separator")			// return a pointer to a string
+
+func main() {
+	flag.Parse()	// Parse() reads the command-line arguments into the defined flags
+	
+	// Join concatenates the elements of its first argument to create a single string. 
+	// The separator string is placed between elements in the resulting string.
+	fmt.Print(strings.Join(flag.Args(), *sep))	
+	if !*n {
+		fmt.Println()
+	}
+}

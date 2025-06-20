@@ -1,0 +1,22 @@
+package main
+
+import "time"
+
+var pc [256]byte
+func init() {
+	for i := range pc {		// omit _, full statement should be: for i, _ := range pc
+		// pc is byte slice, so need to transfor i&1 (int) to byte, i&1 will only return 0 or 1
+		pc[i] = pc[i/2] + byte(i&1)
+	}
+}
+
+func PopCount(x uint64) int {
+	return int(pc[byte(x>>(0*8))] +
+		pc[byte(x>>(1*8))] +
+		pc[byte(x>>(2*8))] +
+		pc[byte(x>>(3*8))] +
+		pc[byte(x>>(4*8))] +
+		pc[byte(x>>(5*8))] +
+		pc[byte(x>>(6*8))] +
+		pc[byte(x>>(7*8))])
+}

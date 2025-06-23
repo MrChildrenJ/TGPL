@@ -40,6 +40,15 @@ func PopCountOnce(x uint64) int {
 	return count
 }
 
+func PopCountClearZero(x uint64) int {
+	var count int
+	for x != 0 {
+		x = x & (x - 1)
+		count += 1
+	}
+	return count
+}
+
 func BenchMark(name string, fn func(uint64) int, iterations int) {	// pass test func into BenchMark
 	start := time.Now()
 
@@ -61,26 +70,27 @@ func BenchMark(name string, fn func(uint64) int, iterations int) {	// pass test 
 }
 
 func main() {
-	// testValues := []uint64{
-	// 	0x1234567890ABCDEF,
-	// 	0xFFFFFFFFFFFFFFFF,
-	// 	0x0000000000000000,
-	// 	0x8000000000000001,
-	// 	0x123867BC90A45DEF,
-	// 	0xFFEFFFF7FFAFFFFF,
-	// 	0x0010003005006000,
-	// 	0x8001001000100001,
-	// }
+	testValues := []uint64{
+		0x1234567890ABCDEF,
+		0xFFFFFFFFFFFFFFFF,
+		0x0000000000000000,
+		0x8000000000000001,
+		0x123867BC90A45DEF,
+		0xFFEFFFF7FFAFFFFF,
+		0x0010003005006000,
+		0x8001001000100001,
+	}
 
-	// for _, val := range testValues {
-	// 	origin := PopCount(val)
-	// 	loop := PopCountLoop(val)
-	// 	fmt.Printf("Origin: %v, Loop: %v\n", origin, loop)
-	// }
+	for _, val := range testValues {
+		origin := PopCount(val)
+		loop := PopCountClearZero(val)
+		fmt.Printf("Origin: %v, Loop: %v\n", origin, loop)
+	}
 
 	iterations := 10000000
 
 	BenchMark("origin", PopCount, iterations)
 	BenchMark("loop", PopCountLoop, iterations)
 	BenchMark("once", PopCountOnce, iterations)
+	BenchMark("Clear", PopCountClearZero, iterations)
 }

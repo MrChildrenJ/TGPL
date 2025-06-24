@@ -1,0 +1,47 @@
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	if len(os.Args) < 2 {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("Enter something: ")
+		s, _ := reader.ReadString('\n')
+		fmt.Println(commaFinal(s))
+	} else {
+		for i := 1; i < len(os.Args); i++ {
+			fmt.Printf("  %s\n", commaFinal(os.Args[i]))
+		}
+	}
+}
+
+func commaFinal(s string) string {
+	if strings.Contains(s, ".") {
+		parts := strings.Split(s, ".")
+		return comma(parts[0]) + "." + parts[1]
+	} else if strings.Contains(s, "-") {
+		return "-" + comma(s[1:])
+	} else if strings.Contains(s, "+") {
+		return "+" + comma(s[1:])
+	} else {
+		return comma(s)
+	}
+}
+
+func comma(s string) string {
+	var buf bytes.Buffer
+	n := len(s)
+	for i := range n {
+		if (i % 3 == 0) && (i != 0) {
+			buf.WriteString(",")
+		}
+		buf.WriteByte(s[i])
+	}
+	return buf.String()
+}

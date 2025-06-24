@@ -1,0 +1,14 @@
+package main
+
+import "fmt"
+
+func main() {
+	s := "測試看看"
+	
+	fmt.Printf("% x\n", s)
+
+	r := []rune(s)
+	fmt.Printf("%x\n", r)
+
+	fmt.Println(string(r))
+}

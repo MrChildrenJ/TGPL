@@ -1,0 +1,27 @@
+package main
+
+import (
+	"crypto/sha256"
+)
+
+func main() {
+	h1 := sha256.Sum256([]byte("a"))
+	h2 := sha256.Sum256([]byte("b"))
+	
+	print(HammingDistance(h1, h2))
+}
+
+func HammingDistance(a, b [32]byte) int {
+	if len(a) != 32 || len(b) != 32 {
+		panic("SHA256 hashes must be exactly 32 bytes")
+	}
+	count := 0
+	for i := 0; i < 32; i++ {
+		xored := a[i] ^ b[i]
+		for xored != 0 {
+			count += int(xored & 1)
+			xored >>= 1
+		}
+	}
+	return count
+}

@@ -1,0 +1,25 @@
+package main
+
+import "fmt"
+
+func main() {
+	s := []string{"a", "a", "b", "b", "c", "c", "d", "d", "e", "e"}
+	clear_dup(&s)
+	fmt.Println(s)
+}
+
+func clear_dup(s *[]string) {
+	slice := *s								// slice and s point to same underlying structure
+	if len(slice) <= 1 {return}
+
+	w := 1									// The position we should write if prev is not the same
+
+	for r := 1; r < len(slice); r++ {		
+		if slice[r] != slice[r - 1] {		// if slice[r] == slice[r-1], do nothing, r++, w unchanged
+			slice[w] = slice[r]				
+			w++
+		}
+	}
+
+	*s = slice[:w]							// w is the end position (+1)
+}

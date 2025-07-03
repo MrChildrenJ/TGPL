@@ -1,0 +1,31 @@
+package main
+
+import "fmt"
+
+func main() {
+	s := []int{1, 2, 3, 4, 5, 6}
+	rotate(s, 4)
+	fmt.Println(s)
+}
+
+
+func rotate(nums []int, k int) {
+	n := len(nums)
+	k %= n
+
+	// temp := []int{}						Wrong!! Create a empty array...
+	// for i := 0; i < n; i++ {				
+	// 	temp[(i+k)%n] = nums[i]				and try to use index to access!!
+	// }
+
+	// temp := make([]int, len(nums))		// Acceptable, but not sure if it counts as a single pass
+	// temp = append(temp, nums[k:]...)		// should use ... to expand the slice. Like extend i/o append in python
+	// temp = append(temp, nums[:k]...)
+
+	temp := make([]int, n)
+	for i := 0; i < n; i++ {
+		temp[(i+k)%n] = nums[i]
+	}
+	
+	copy(nums, temp)
+}

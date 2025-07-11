@@ -1,0 +1,29 @@
+package main
+
+import (
+	"fmt"
+	"unicode/utf8"
+)
+
+func main() {
+	arr := []byte("abcdefg")
+	reverse(&arr)
+	fmt.Println(string(arr))
+}
+
+func reverse(arr* []byte) {
+	n := len(*arr)
+
+	if len(*arr) == 0 {
+		return
+	}
+	
+	for l, r := 0, n-1; l < r; {
+		_, lsize := utf8.DecodeRune((*arr)[l:])
+		_, rsize := utf8.DecodeRune((*arr)[r:])
+		
+		(*arr)[l], (*arr)[r] = (*arr)[r], (*arr)[l]
+		l += lsize
+		r -= rsize
+	}
+}

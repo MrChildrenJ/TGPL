@@ -1,0 +1,29 @@
+package main
+
+import (
+	"io"
+	"os"
+	"strings"
+)
+
+type rot13Reader struct { // r13 reader wrap a io.Reader
+	r io.Reader
+}
+
+func (r13 rot13Reader) Read(b []byte) (int, error) { // slice is a REF itself, so don't need to add *
+	n, err := r13.r.Read(b)
+	for i, char := range b {
+		if char >= 'a' && char <= 'z' {
+			b[i] = 'a' + (char-'a'+13)%26
+		} else if char >= 'A' && char <= 'Z' {
+			b[i] = 'A' + (char-'A'+13)%26
+		}
+	}
+	return n, err
+}
+
+func main() {
+	s := strings.NewReader("Lbh penpxrq gur pbqr!") // s: byte[]
+	r := rot13Reader{s}
+	io.Copy(os.Stdout, &r)
+}

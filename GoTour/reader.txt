@@ -1,0 +1,31 @@
+package main
+
+import (
+	"fmt"
+	"io"
+	"strings"
+)
+
+func main() {
+	// func NewReader(s string) *Reader: NewReader returns a new Reader reading from s.
+	// 將字串轉換為實現了 io.Reader interface的object，可以像讀取文件一樣讀取字符串
+	//
+	// 零拷貝 - 不複製原字符串
+	// 支持隨機訪問 - 可以 Seek 和 ReadAt
+	// 實現多個接口 - Reader, ReaderAt, Seeker
+	// 高性能 - 直接從內存讀取，無 I/O 開銷
+
+	r := strings.NewReader("Hello, Reader!")
+
+	b := make([]byte, 8) // buffer
+
+	for {
+		n, err := r.Read(b)
+		fmt.Printf("n = %v err = %v b = %v\n", n, err, b) //
+		fmt.Printf("b[:n] = %q\n", b[:n])                 // 只讀了 n 個 byte ，所以只 print b[:n]
+
+		if err == io.EOF {
+			break
+		}
+	}
+}

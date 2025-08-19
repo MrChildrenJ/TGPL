@@ -1,0 +1,53 @@
+package main
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
+type IPAddr [4]byte
+
+// TODO: Add a "String() string" method to IPAddr.
+// func (ip IPAddr) String() string {
+// 	s := ""
+// 	for i, v := range ip {
+// 		if i != (len(ip) - 1) {
+// 			s = s + fmt.Sprintf("%v.", v)
+// 		} else {
+// 			s = s + fmt.Sprintf("%v", v)
+// 		}
+// 	}
+// 	return s
+// }
+
+// strings.Join
+// func (ip IPAddr) String() string {
+// 	parts := make([]string, len(ip))
+// 	for i, v := range ip {
+// 		parts[i] = strconv.Itoa(int(v))
+// 	}
+// 	return strings.Join(parts, ".")
+// }
+
+// strings.Builder
+func (ip IPAddr) String() string {
+	var builder strings.Builder
+	for i, v := range ip {
+		if i > 0 {
+			builder.WriteString(".") // 非第一個元素，先加 "."
+		}
+		builder.WriteString(strconv.Itoa(int(v)))
+	}
+	return builder.String()
+}
+
+func main() {
+	hosts := map[string]IPAddr{
+		"loopback":  {127, 0, 0, 1},
+		"googleDNS": {8, 8, 8, 8},
+	}
+	for name, ip := range hosts {
+		fmt.Printf("%v: %v\n", name, ip)
+	}
+}

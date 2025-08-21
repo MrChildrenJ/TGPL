@@ -1,0 +1,30 @@
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch1 := make(chan string)
+	ch2 := make(chan string)
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		ch1 <- "From ch1"
+	}()
+
+	go func() {
+		time.Sleep(2 * time.Second)
+		ch2 <- "From ch2"
+	}()
+
+	for i := 0; i < 2; i++ {
+		select {
+		case msg1 := <-ch1: // If receive data from ch1, name it to msg1, then print it
+			fmt.Println("Receive:", msg1)
+		case msg2 := <-ch2:
+			fmt.Println("Receive:", msg2)
+		}
+	}
+}
